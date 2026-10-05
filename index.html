@@ -1,7 +1,260 @@
-<html>
-  <head>
-  </head>
-  <body>
-    <a href="flopo.owl">flopo.owl</a>
-  </body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flora Phenotype Ontology (FLOPO)</title>
+<meta name="description" content="FLOPO describes the traits and phenotypes of vascular plants recorded in digitized Floras, as an OWL ontology built on the Plant Ontology and PATO.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&family=Alegreya+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --prussian: #0f3a63;
+  --wash: #1c5a8e;
+  --paper: #f8fafc;
+  --frost: #e2ecf4;
+  --ink: #14263b;
+  --muted: #4a5d72;
+  --rule: #c9d7e4;
+  --link: #1c5a8e;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #0c1824;
+    --frost: #142636;
+    --ink: #e4edf5;
+    --muted: #a3b6c8;
+    --rule: #2a4258;
+    --link: #8fc0ea;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 1.1875rem/1.62 "Alegreya", Georgia, serif;
+}
+a { color: var(--link); text-underline-offset: 0.18em; text-decoration-thickness: 1px; }
+a:hover { text-decoration-thickness: 2px; }
+a:focus-visible { outline: 3px solid #f2c14e; outline-offset: 3px; border-radius: 2px; }
+
+/* The cyanotype plate */
+.plate {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 85% 20%, #2a6ba1 0%, rgba(42,107,161,0) 60%),
+    linear-gradient(160deg, var(--wash) 0%, var(--prussian) 70%);
+  color: #f4f8fc;
+}
+.plate::after { /* faint paper grain, as on a sun print */
+  content: "";
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+.plate-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 68rem;
+  margin: 0 auto;
+  padding: 4.5rem 1.5rem 4rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr);
+  gap: 2rem;
+  align-items: center;
+}
+.plate h1 {
+  margin: 0;
+  font-weight: 500;
+  font-size: clamp(2.6rem, 6vw, 4.6rem);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+}
+.plate h1 span { display: block; font-style: italic; font-weight: 400; opacity: 0.85; font-size: 0.5em; margin-top: 0.6rem; letter-spacing: 0; }
+.plate p.lede { max-width: 34rem; margin: 1.6rem 0 2rem; font-size: 1.25rem; color: #dce9f5; }
+.actions { display: flex; flex-wrap: wrap; gap: 0.75rem; font-family: "Alegreya Sans", sans-serif; }
+.actions a {
+  display: inline-block;
+  padding: 0.6rem 1.1rem;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1rem;
+}
+.actions a.primary { background: #f4f8fc; color: var(--prussian); }
+.actions a.secondary { color: #f4f8fc; box-shadow: inset 0 0 0 1px rgba(244,248,252,0.6); }
+.actions a:hover { box-shadow: inset 0 0 0 2px #f4f8fc; }
+.sprig { width: 100%; max-width: 24rem; justify-self: end; height: auto; opacity: 0.95; }
+.sprig path, .sprig ellipse, .sprig circle { fill: #f4f8fc; }
+.sprig .vein { fill: none; stroke: var(--prussian); stroke-width: 1.2; opacity: 0.55; }
+.sprig .stem { fill: none; stroke: #f4f8fc; stroke-width: 3; stroke-linecap: round; }
+@media (prefers-reduced-motion: no-preference) {
+  .sprig { animation: expose 1.6s ease-out both; }
+  @keyframes expose { from { opacity: 0; } to { opacity: 0.95; } }
+}
+
+/* Reading column */
+main { max-width: 68rem; margin: 0 auto; padding: 3.5rem 1.5rem 2rem; }
+section { max-width: 41rem; margin-bottom: 3.25rem; }
+h2 { font-weight: 500; font-size: 1.75rem; line-height: 1.2; margin: 0 0 0.9rem; color: var(--ink); }
+p { margin: 0 0 1rem; }
+.small, table, .slip, footer { font-family: "Alegreya Sans", sans-serif; }
+code { font-size: 0.82em; overflow-wrap: anywhere; }
+.muted { color: var(--muted); }
+
+/* A term shown as a herbarium determination slip */
+.slip {
+  margin: 1.75rem 0 0.5rem;
+  max-width: 30rem;
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--wash);
+  background: var(--frost);
+  padding: 1rem 1.25rem 1.1rem;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.slip .name { font-family: "Alegreya", serif; font-size: 1.45rem; font-style: italic; margin: 0.1rem 0 0.4rem; }
+.slip .id { color: var(--muted); }
+.slip .axiom { margin: 0.55rem 0 0; padding-top: 0.55rem; border-top: 1px dashed var(--rule); }
+.slip .axiom em { font-style: normal; color: var(--muted); }
+
+/* Releases */
+.wide { max-width: 52rem; }
+table { width: 100%; border-collapse: collapse; font-size: 1rem; line-height: 1.45; }
+th, td { text-align: left; vertical-align: top; padding: 0.7rem 0.9rem 0.7rem 0; border-bottom: 1px solid var(--rule); }
+th { font-weight: 700; color: var(--muted); font-size: 0.9rem; }
+td:first-child { white-space: nowrap; font-weight: 500; }
+.facts { display: flex; flex-wrap: wrap; gap: 0.4rem 2rem; margin: 0 0 1.25rem; padding: 0; list-style: none; font-family: "Alegreya Sans", sans-serif; font-size: 1rem; color: var(--muted); }
+.facts strong { color: var(--ink); font-weight: 700; }
+blockquote { margin: 0; padding: 0.9rem 1.2rem; background: var(--frost); border-radius: 4px; font-size: 1.05rem; }
+
+footer { max-width: 68rem; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; font-size: 0.95rem; color: var(--muted); border-top: 1px solid var(--rule); }
+
+@media (max-width: 760px) {
+  .plate-inner { grid-template-columns: 1fr; padding: 3rem 1rem 2.5rem; }
+  .sprig { max-width: 11rem; justify-self: start; grid-row: 1; }
+  main, footer { padding-left: 1rem; padding-right: 1rem; }
+  td:first-child { white-space: normal; }
+  table, thead, tbody, tr, th, td { display: block; }
+  thead { display: none; }
+  tr { border-bottom: 1px solid var(--rule); padding: 0.6rem 0; }
+  td { border: 0; padding: 0.15rem 0; }
+}
+</style>
+</head>
+<body>
+
+<header class="plate">
+  <div class="plate-inner">
+    <div>
+      <h1>Flora Phenotype Ontology<span>FLOPO</span></h1>
+      <p class="lede">The traits of vascular plants as they are written in Floras, made computable: every term pairs a plant part from the Plant Ontology with a quality from PATO.</p>
+      <div class="actions">
+        <a class="primary" href="http://purl.obolibrary.org/obo/flopo.owl">Download flopo.owl</a>
+        <a class="secondary" href="http://aber-owl.net/ontology/FLOPO">Browse in AberOWL</a>
+      </div>
+    </div>
+    <svg class="sprig" viewBox="0 0 240 320" role="img" aria-label="Silhouette of a leafy flowering sprig, in the style of a cyanotype">
+      <path class="stem" d="M120 312 C 118 250, 126 190, 120 130 S 112 60, 126 22"/>
+      <path class="stem" d="M121 205 C 150 190, 168 170, 182 140"/>
+      <path class="stem" d="M119 160 C 92 148, 74 126, 64 98"/>
+      <path d="M121 262 C 92 262, 52 248, 30 222 C 64 214, 100 226, 121 262 Z"/>
+      <path class="vein" d="M121 262 C 92 250, 60 236, 34 223"/>
+      <path d="M120 236 C 150 238, 192 226, 214 200 C 180 192, 142 206, 120 236 Z"/>
+      <path class="vein" d="M120 236 C 150 228, 182 214, 210 201"/>
+      <path d="M182 140 C 170 116, 172 92, 190 74 C 204 96, 200 122, 182 140 Z"/>
+      <path class="vein" d="M182 140 C 184 116, 186 96, 190 78"/>
+      <path d="M64 98 C 48 82, 44 58, 56 38 C 74 54, 76 80, 64 98 Z"/>
+      <path class="vein" d="M64 98 C 60 80, 58 60, 57 42"/>
+      <g transform="translate(126 22)">
+        <ellipse cx="0" cy="-12" rx="7" ry="13"/>
+        <ellipse cx="0" cy="-12" rx="7" ry="13" transform="rotate(72)"/>
+        <ellipse cx="0" cy="-12" rx="7" ry="13" transform="rotate(144)"/>
+        <ellipse cx="0" cy="-12" rx="7" ry="13" transform="rotate(216)"/>
+        <ellipse cx="0" cy="-12" rx="7" ry="13" transform="rotate(288)"/>
+        <circle cx="0" cy="0" r="4.5" style="fill: var(--prussian)"/>
+      </g>
+    </svg>
+  </div>
+</header>
+
+<main>
+  <section>
+    <h2>What FLOPO describes</h2>
+    <p>Floras describe plants in a compact, conventional language: <i>leaves ovate, acuminate at the apex; petals pink</i>. FLOPO turns these statements into ontology classes. It was first built by text mining the Flora of Gabon, Flora Malesiana and the floras of tropical Africa, and has since been rebuilt from reviewed annotations of the same sources.</p>
+    <p>Each phenotype class has a logical definition, so a reasoner can place it in the hierarchy: a pink petal is a petal colour phenotype and, because a petal is part of a flower, also a flower phenotype.</p>
+    <div class="slip" aria-label="Example term">
+      <div class="id">FLOPO:0000060</div>
+      <div class="name">petal pink</div>
+      <div>A phenotype in which a petal exhibits the quality of being pink.</div>
+      <div class="axiom"><em>Equivalent to</em> has part some (petal <em>and</em> has quality some pink)</div>
+    </div>
+    <p class="small muted">Colour values follow the ISCC-NBS colour system. Flora words such as French <i>rose</i> and <i>rosâtre</i> or English <i>pinkish</i> are synonyms of its pink class, each marked as an exact or approximate match.</p>
+  </section>
+
+  <section class="wide">
+    <h2>Releases</h2>
+    <ul class="facts">
+      <li>Current release <strong>2026-10-05</strong></li>
+      <li><strong>24,531</strong> active classes</li>
+      <li><strong>23,576</strong> entity–quality phenotypes</li>
+    </ul>
+    <table>
+      <thead><tr><th>File</th><th>Contents</th><th>Get it</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>flopo.owl</td>
+          <td>The full ontology: logical definitions, imports of the Plant Ontology and PATO, and obsolete terms kept for their identifiers.</td>
+          <td><a href="http://purl.obolibrary.org/obo/flopo.owl">Latest</a></td>
+        </tr>
+        <tr>
+          <td>flopo-inferred.owl</td>
+          <td>The same ontology with the class hierarchy computed by the ELK reasoner.</td>
+          <td><a href="http://purl.obolibrary.org/obo/flopo/releases/2026-10-05/flopo-inferred.owl">2026-10-05</a></td>
+        </tr>
+        <tr>
+          <td>flopo-light.owl</td>
+          <td>A pre-classified view with the phenotype classes and their hierarchy only, for ontology browsers.</td>
+          <td><a href="http://purl.obolibrary.org/obo/flopo/releases/2026-10-05/flopo-light.owl">2026-10-05</a></td>
+        </tr>
+        <tr>
+          <td>Annotation classes</td>
+          <td>25,385 classes, one for each distinct phenotype description found in the annotated Floras, defined over FLOPO (OWL functional syntax).</td>
+          <td><a href="https://github.com/flora-phenotype-ontology/flopoontology/raw/master/ontology/flopo-annotation-extension.ofn">Repository</a></td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="small muted" style="margin-top:1rem">Every release has a permanent address of the form <code>http://purl.obolibrary.org/obo/flopo/releases/<i>YYYY-MM-DD</i>/flopo.owl</code>. All releases and their notes are on the <a href="https://github.com/flora-phenotype-ontology/flopoontology/releases">releases page</a>.</p>
+  </section>
+
+  <section>
+    <h2>Browse and link to terms</h2>
+    <p>Term identifiers have the form <code>http://purl.obolibrary.org/obo/FLOPO_0000060</code> and open in <a href="http://aber-owl.net/ontology/FLOPO">AberOWL</a>, where you can also query FLOPO with OWL class expressions. FLOPO is also listed in the <a href="https://www.ebi.ac.uk/ols4/ontologies/flopo">Ontology Lookup Service</a> and is a member of the <a href="http://obofoundry.org/ontology/flopo.html">OBO Foundry</a> library.</p>
+  </section>
+
+  <section>
+    <h2>Cite FLOPO</h2>
+    <blockquote>Hoehndorf R, Alshahrani M, Gkoutos GV, Gosline G, Groom Q, Hamann T, Kattge J, Mota de Oliveira S, Schmidt M, Sierra S, Smets E, Vos RA, Weiland C. The flora phenotype ontology (FLOPO): tool for integrating morphological traits and phenotypes of vascular plants. <i>Journal of Biomedical Semantics</i> 7:65 (2016). <a href="https://doi.org/10.1186/s13326-016-0107-8">doi:10.1186/s13326-016-0107-8</a></blockquote>
+  </section>
+
+  <section>
+    <h2>Licence</h2>
+    <p>The ontology and its release files are dedicated to the public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>: use them for any purpose, without asking. The software that builds FLOPO is available under the <a href="https://github.com/flora-phenotype-ontology/flopoontology/blob/master/LICENSE">BSD 3-clause licence</a>.</p>
+  </section>
+
+  <section>
+    <h2>Contribute</h2>
+    <p>Report a wrong or missing term, or propose a new one, on the <a href="https://github.com/flora-phenotype-ontology/flopoontology/issues">issue tracker</a>. The source, the text-mining and annotation pipeline, and the release tools are in the <a href="https://github.com/flora-phenotype-ontology/flopoontology">flopoontology repository</a>.</p>
+  </section>
+</main>
+
+<footer>
+  FLOPO is maintained by <a href="https://orcid.org/0000-0001-8149-5890">Robert Hoehndorf</a> at King Abdullah University of Science and Technology. Current release: 2026-10-05.
+</footer>
+
+</body>
 </html>
